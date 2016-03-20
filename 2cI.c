@@ -44,30 +44,39 @@ void main() {
   char filenameOut[LOGIN_LINE_LEN];
   int fileSize;
   
-  printf("Input filename to run through encryption test: ");
+  printf("Input filename to run through encryption test: ");  
   readCommand(filenameIn);
   
+	printf("\n\nEncryption\n\n");
   fileInput = readFile(filenameIn);
   fileOutput = malloc(strlen(fileInput) + 1);
-    
+  printf("Encr Input: %s\n", fileOutput);
   transEncodeString(fileInput, fileOutput);
+  printf("Encr Tran: %s\n", fileOutput);
   strcpy(fileInput, fileOutput);
   subEncodeString(fileInput, fileOutput, 6); 
+  printf("Encr Subs: %s\n", fileOutput);
   strcpy(fileInput, fileOutput);
   XORCrypt(fileInput, fileOutput, "HYiC5dZC0jiMdeQByHcPXxY7sDATnwyX");
-  
+  printf("Encr XORd: %s\n", fileOutput);
   sprintf(filenameOut, "%s.crpt", filenameIn);
   writeFile(filenameOut, fileOutput);
   free(fileInput);
+  free(fileOutput);
 
-  fileInput = readFile(filenameIn);
+  printf("\n\nDecryption\n\n");
+  fileInput = readFile(filenameOut);
+  fileOutput = malloc(strlen(fileInput) + 1);
   
-  strcpy(fileInput, fileOutput);
+  printf("Decr Input: %s\n", fileInput);
   XORCrypt(fileInput, fileOutput, "HYiC5dZC0jiMdeQByHcPXxY7sDATnwyX");
+  printf("Decr XORd: %s\n", fileOutput);
   strcpy(fileInput, fileOutput);
   subDecodeString(fileInput, fileOutput, 6);
+  printf("Decr Subs: %s\n", fileOutput);
   strcpy(fileInput, fileOutput);
   transDecodeString(fileInput, fileOutput);
+  printf("Decr Tran: %s\n", fileOutput);
   
   sprintf(filenameOut, "%s.decrpt", filenameIn);
   writeFile(filenameOut, fileOutput);
@@ -75,6 +84,7 @@ void main() {
   free(fileInput);
   free(fileOutput);
   
+  printf("\n\nComparing Results\n\n");
   fileInput = readFile(filenameIn);
   fileOutput = readFile(filenameOut);
   if (strcmp(fileInput, fileOutput)) {

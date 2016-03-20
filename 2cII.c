@@ -86,6 +86,7 @@ void main() {
 	    } else {
 		    memset(filenameOut, 0, filenameLen);
 		    strncpy(filenameOut, filenameIn, filenameLen-5);
+	      printf("Decryption successful. Writing back file %s!\n", filenameOut);
 			  writeFile(filenameOut, &fileOutput[passLen]);
 			  remove(filenameIn);
 	    }
@@ -98,6 +99,7 @@ void main() {
 		  strcpy(fileInput, fileOutput);	  
 		  XORCrypt(fileInput, fileOutput, password);		  		  	  
 		  sprintf(filenameOut, "%s.crpt", filenameIn);
+		  printf("Encryption successful. Writing back file %s!\n", filenameOut);
 		  writeFile(filenameOut, fileOutput);
 		  remove(filenameIn);
     }
