@@ -1,3 +1,6 @@
+#ifndef __ENCRYPTION_H
+#define __ENCRYPTION_H
+
 void XORCrypt(char input[], char output[], char key[]);
 
 char subEncodeChar(char ch, int rotate);
@@ -15,3 +18,5 @@ void transDecodeBlock(char input[], char output[], int detrans[], int length);
 void transEncodeString(char input[], char output[]);
 
 void transDecodeString(char input[], char output[]);
+
+#endif

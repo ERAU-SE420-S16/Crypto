@@ -1,6 +1,5 @@
-#ifndef NULL
-#define	NULL	0
-#endif
+#ifndef __SECURITY_H_
+#define __SECURITY_H_
 
 #include <stdbool.h>
 
@@ -8,4 +7,5 @@
 
 cJSON* authenticateUser(const char* userFile);
 void updateUser(const char* userFile, cJSON* userObject);
-void readCommand(char buffer[]);
+
+#endif

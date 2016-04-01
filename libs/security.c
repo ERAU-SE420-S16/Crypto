@@ -9,21 +9,23 @@
 #include	<unistd.h>
 #include  <crypt.h>
 
-#include	"security.h"
-#include  "cJSON.h"
+#include "security.h"
 
-#define LOGIN_LINE_LEN 255
+#include "cJSON.h"
+#include "fileIO.h"
+
+#define __SECURITY_CMD_LEN 255
 
 unsigned long seed[2];
 char salt[] = "$1$........";
 const char *const seedchars = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 														  
-void readCommand(char buffer[]) {
-  fgets(buffer, LOGIN_LINE_LEN, stdin);
+void __security_readCommand(char buffer[]) {
+  fgets(buffer, __SECURITY_CMD_LEN, stdin);
   buffer[strlen(buffer)-1] = '\0';  // overwrite the line feed with null term
 }
 
-void generateSalt(void) {
+void __security_generateSalt(void) {
   /* Generate a (not very) random seed.
     You should do it better than this... */
   seed[0] = time(NULL);
@@ -35,41 +37,18 @@ void generateSalt(void) {
   salt[3+i] = seedchars[(seed[i/5] >> (i%5)*6) & 0x3f];
 }
 
-cJSON* loadUserDB(const char* userFile) { 
+cJSON* __security_loadUserDB(const char* userFile) { 
   char *strUserJson;
-  long userDatabaseSize;  
-  cJSON* d = NULL;
-  FILE *fptrUserDatabase = fopen(userFile, "rb");
-  if (fptrUserDatabase) {
-    fseek(fptrUserDatabase, 0, SEEK_END);
-    userDatabaseSize = ftell(fptrUserDatabase);
-    fseek(fptrUserDatabase, 0, SEEK_SET);
-
-    strUserJson = malloc(userDatabaseSize + 1);
-    fread(strUserJson, userDatabaseSize, 1, fptrUserDatabase);
-    fclose(fptrUserDatabase);
-
-    strUserJson[userDatabaseSize] = 0;
-    
-    if (userDatabaseSize > 0) d = cJSON_Parse(strUserJson);
-  }
-  
-  if (!d) d = cJSON_CreateObject();
-  
-	return d;
+  cJSON* data = NULL;
+  strUserJson = readFile(userFile);
+  if (strlen(strUserJson) > 0) data = cJSON_Parse(strUserJson);
+  if (!data) data = cJSON_CreateObject();
+	return data;
 }
 
-bool saveUserDB(const char* userFile, cJSON* userDatabase) {
-  bool rc = false;
-  char *strUserJson = cJSON_Print(userDatabase);
-  FILE *fptrUserDatabase = fopen(userFile, "wb+");
-  if (fptrUserDatabase != NULL) {
-    if (fputs (strUserJson, fptrUserDatabase) != EOF) {
-      rc = true;
-    }
-    if (fclose (fptrUserDatabase) == EOF) rc = false;
-  }
-  return rc;
+bool __security_saveUserDB(const char* userFile, cJSON* userDatabase) {
+  char *strUserJson = cJSON_Print(userDatabase);  
+  return writeFile(strUserJson, strUserJson);
 }
 
 cJSON* authenticateUser(const char* userFile) {
@@ -79,22 +58,22 @@ cJSON* authenticateUser(const char* userFile) {
 	cJSON *passwordObj  = NULL;
   bool userValid = false;
   int loginAttempts = 0;
-  char commandLine[LOGIN_LINE_LEN];
-	char username[LOGIN_LINE_LEN];
-	char password[LOGIN_LINE_LEN];
+  char commandLine[__SECURITY_CMD_LEN];
+	char username[__SECURITY_CMD_LEN];
+	char password[__SECURITY_CMD_LEN];
   
-  userDatabase = loadUserDB(userFile);
+  userDatabase = __security_loadUserDB(userFile);
   if (!userDatabase) {
     return NULL;
   }
   printf("Please type a username: ");
-  readCommand(username);
+  __security_readCommand(username);
   userObject = cJSON_GetObjectItem(userDatabase, username);
   if (userObject) {
     printf("User Exists!\nPlease enter your password: ");
     passwordObj = cJSON_GetObjectItem(userObject, "password");
     while (true) {
-      readCommand(commandLine);
+      __security_readCommand(commandLine);
       strcpy(password, commandLine);
       if (!strcmp(crypt(commandLine, passwordObj->valuestring), passwordObj->valuestring)) {
         userValid = true;
@@ -103,7 +82,7 @@ cJSON* authenticateUser(const char* userFile) {
         printf("Wrong password! %d attempt(s) left.\nPlease enter your password: ", 1 - loginAttempts);
       } else {
         printf("Wrong password!\nDo you want to reset your password (y)? ");
-        readCommand(commandLine);
+        __security_readCommand(commandLine);
         if (!strcmp(commandLine, "y")) {
           cJSON *recovery = cJSON_GetObjectItem(userObject, "recovery");
           if (recovery && cJSON_GetArraySize(recovery) > 0) {          
@@ -113,7 +92,7 @@ cJSON* authenticateUser(const char* userFile) {
               char *question = cJSON_GetObjectItem(prompt, "question")->valuestring;
               char *answer = cJSON_GetObjectItem(prompt, "answer")->valuestring;
               printf("Question %d: %s\nAnswer: ", promptNum+1, question);
-              readCommand(commandLine);
+              __security_readCommand(commandLine);
               if (strcmp(answer, crypt(commandLine, answer))) {
                 userValid = false;
                 break;
@@ -121,13 +100,13 @@ cJSON* authenticateUser(const char* userFile) {
               userValid = true;
             }
             if (userValid) {
-							char commandLine[LOGIN_LINE_LEN];
+							char commandLine[__SECURITY_CMD_LEN];
 						  printf("Please type a new password: ");
-						  readCommand(commandLine);
-							generateSalt();
+						  __security_readCommand(commandLine);
+							__security_generateSalt();
 						  passwordObj = cJSON_CreateString(crypt(commandLine, salt));
 						  cJSON_ReplaceItemInObject(userObject, "password", passwordObj);
-						  saveUserDB(userFile, userDatabase);
+						  __security_saveUserDB(userFile, userDatabase);
             } else {
               printf("User recovery failed.\n");
             }
@@ -142,9 +121,9 @@ cJSON* authenticateUser(const char* userFile) {
   } else {
     userObject = cJSON_CreateObject();
     printf("User not found.\nCreating new User.\nPlease type a password: ");
-    readCommand(commandLine);
+    __security_readCommand(commandLine);
     
-    generateSalt();
+    __security_generateSalt();
     cJSON_AddStringToObject(userObject, "password", crypt(commandLine, salt)); 
     
     cJSON *recovery = cJSON_CreateArray();
@@ -153,29 +132,29 @@ cJSON* authenticateUser(const char* userFile) {
     cJSON *prompt3  = cJSON_CreateObject();
     
     printf("Please enter password recovery question 1: ");
-    readCommand(commandLine);
+    __security_readCommand(commandLine);
     cJSON_AddStringToObject(prompt1, "question", commandLine);    
     printf("Please enter password recovery response 1: ");
-    readCommand(commandLine);
-    generateSalt();
+    __security_readCommand(commandLine);
+    __security_generateSalt();
     cJSON_AddStringToObject(prompt1, "answer", crypt(commandLine, salt));    
     cJSON_AddItemToArray(recovery, prompt1);
     
     printf("Please enter password recovery question 2: ");    
-    readCommand(commandLine);
+    __security_readCommand(commandLine);
     cJSON_AddStringToObject(prompt2, "question", commandLine);    
     printf("Please enter password recovery response 2: ");
-    readCommand(commandLine);
-    generateSalt();
+    __security_readCommand(commandLine);
+    __security_generateSalt();
     cJSON_AddStringToObject(prompt2, "answer", crypt(commandLine, salt));    
     cJSON_AddItemToArray(recovery, prompt2);
     
     printf("Please enter password recovery question 3: ");    
-    readCommand(commandLine);
+    __security_readCommand(commandLine);
     cJSON_AddStringToObject(prompt3, "question", commandLine);    
     printf("Please enter password recovery response 3: ");
-    readCommand(commandLine);
-    generateSalt();
+    __security_readCommand(commandLine);
+    __security_generateSalt();
     cJSON_AddStringToObject(prompt3, "answer", crypt(commandLine, salt));    
     cJSON_AddItemToArray(recovery, prompt3);
     
@@ -184,7 +163,7 @@ cJSON* authenticateUser(const char* userFile) {
     
     userValid = true;
   }
-	saveUserDB(userFile, userDatabase);
+	__security_saveUserDB(userFile, userDatabase);
 	if (userValid) {
 		userRetObj = cJSON_CreateObject();
 		cJSON_AddStringToObject(userRetObj, "username", username);
@@ -198,11 +177,11 @@ cJSON* authenticateUser(const char* userFile) {
 void updateUser(const char* userFile, cJSON* userObject) {
   cJSON *userDatabase = NULL;
   if (!userObject) return;
-  cJSON* u = cJSON_Duplicate(userObject, 1);
-  userDatabase = loadUserDB(userFile);
-  cJSON *username = cJSON_GetObjectItem(u, "username");
-  cJSON *data     = cJSON_GetObjectItem(u, "data");
+  cJSON* userCopy = cJSON_Duplicate(userObject, 1);
+  userDatabase = __security_loadUserDB(userFile);
+  cJSON *username = cJSON_GetObjectItem(userCopy, "username");
+  cJSON *data     = cJSON_GetObjectItem(userCopy, "data");
   cJSON_ReplaceItemInObject(userDatabase, username->valuestring, data);
-	saveUserDB(userFile, userDatabase);
+	__security_saveUserDB(userFile, userDatabase);
 	cJSON_Delete(userDatabase);
 }

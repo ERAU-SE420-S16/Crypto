@@ -5,38 +5,11 @@
 #include <stdbool.h>
 
 #include "./libs/encryption.h"
+#include "./libs/fileIO.h"
 
 #define LOGIN_LINE_LEN 255
 
-char* readFile(const char* file) { 
-  long size;
-  char* data = NULL;
-  FILE *fptr = fopen(file, "rb");
-  if (fptr) {
-    fseek(fptr, 0, SEEK_END);
-    size = ftell(fptr);
-    fseek(fptr, 0, SEEK_SET);
-
-    data = malloc(size + 1);
-    fread(data, size, 1, fptr);
-    fclose(fptr);
-
-    data[size] = 0;    
-  }
-  return data;
-}
-
-bool writeFile(const char* file, char* data) {
-  bool rc = false;
-  FILE *fptr = fopen(file, "wb+");
-  if (fptr) {
-    if (fputs (data, fptr) != EOF) {
-      rc = true;
-    }
-    if (fclose (fptr) == EOF) rc = false;
-  }
-  return rc;
-}
+#define XOR_CIPHER "HYiC5dZC0jiMdeQByHcPXxY7sDATnwyX"
 
 void main() {
   char *fileInput = NULL, *fileOutput = NULL;
@@ -57,7 +30,7 @@ void main() {
   subEncodeString(fileInput, fileOutput, 6); 
   printf("Encr Subs: %s\n", fileOutput);
   strcpy(fileInput, fileOutput);
-  XORCrypt(fileInput, fileOutput, "HYiC5dZC0jiMdeQByHcPXxY7sDATnwyX");
+  XORCrypt(fileInput, fileOutput, XOR_CIPHER);
   printf("Encr XORd: %s\n", fileOutput);
   sprintf(filenameOut, "%s.crpt", filenameIn);
   writeFile(filenameOut, fileOutput);
@@ -69,7 +42,7 @@ void main() {
   fileOutput = malloc(strlen(fileInput) + 1);
   
   printf("Decr Input: %s\n", fileInput);
-  XORCrypt(fileInput, fileOutput, "HYiC5dZC0jiMdeQByHcPXxY7sDATnwyX");
+  XORCrypt(fileInput, fileOutput, XOR_CIPHER);
   printf("Decr XORd: %s\n", fileOutput);
   strcpy(fileInput, fileOutput);
   subDecodeString(fileInput, fileOutput, 6);

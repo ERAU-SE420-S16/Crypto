@@ -20,20 +20,17 @@ void XORCrypt(char input[], char output[], char key[]) {
 	output[i] = '\0';
 }
 
-char subEncodeChar(char ch, int rotate)
-{
+char subEncodeChar(char ch, int rotate) {
   return (char) ((ch-' '+(rotate%95))%95)+' ';
 }
 
-char subDecodeChar(char ch, int rotate)
-{
+char subDecodeChar(char ch, int rotate) {
   int d = (char) ((ch-' '-(rotate%95))%95);
   if (d < 0) return 127+d;
   return d+' ';
 }
 
-void subEncodeString(char input[], char output[], int rotate)
-{
+void subEncodeString(char input[], char output[], int rotate) {
     int i, length = strlen(input);
     memset(output, 0, length);
 
@@ -43,8 +40,7 @@ void subEncodeString(char input[], char output[], int rotate)
     output[i] = '\0';
 }
 
-void subDecodeString(char input[], char output[], int rotate)
-{
+void subDecodeString(char input[], char output[], int rotate) {
     int i, length = strlen(input);
     memset(output, 0, length);
 
@@ -87,8 +83,6 @@ void transEncodeString(char input[], char output[]) {
         }
     } while(idx < length);
 }
-
-
 
 void transDecodeString(char input[], char output[]) {
     int idx=0;
