@@ -20,10 +20,13 @@ void readCommand(char buffer[]) {
 
 void
 printList(FileList* rootNode) {
+  unsigned long count;
 	while(rootNode) {
+    count++;
 		printf("File : %s \n", rootNode->filePath);
 		rootNode = rootNode->next;
 	}
+  printf("Found %ul files!\n");
 }
 
 int main (void) {
@@ -37,6 +40,7 @@ int main (void) {
     
     rootNode = GetFileList(dirPath);
     printList(rootNode);
+    printf("Test\n");
     
     printf("Are you done? (y/n) ");
     readCommand(userResponse);

@@ -53,6 +53,7 @@ void FreeFileList(FileList* rootNode) {
   while (rootNode) {
     currentNode = rootNode;
     rootNode = rootNode->next;
+    free(currentNode->filePath);
     free(currentNode);
   }
 }
