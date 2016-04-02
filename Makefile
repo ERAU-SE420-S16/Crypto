@@ -1,6 +1,6 @@
 all: clean
 	$(MAKE) -C ./libs/ all
-	gcc -lm -lcrypt -o filelistGenTest filelistGenTest.c ./libs/libSecureEncryption.a
+	gcc -lm -lcrypt -lrt -o filelistGenTest filelistGenTest.c ./libs/libSecureEncryption.a
 	gcc -lm -lcrypt -o loginTest loginTest.c ./libs/libSecureEncryption.a
 
 clean:
