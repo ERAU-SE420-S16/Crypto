@@ -31,7 +31,7 @@ printList(FileList* rootNode) {
 }
 
 int main (void) {
-	char dirPath[CMD_LEN] = "../../";
+	char dirPath[CMD_LEN];
 	char userResponse[CMD_LEN];
 	FileList* rootNode = NULL;
 	struct timespec start_time, end_time;
