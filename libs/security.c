@@ -8,6 +8,7 @@
 #include  <termios.h>
 #include	<unistd.h>
 #include  <crypt.h>
+#include <ctype.h>
 
 #include "security.h"
 
@@ -81,9 +82,9 @@ cJSON* authenticateUser(const char* userFile) {
       } else if (loginAttempts < 2) {
         printf("Wrong password! %d attempt(s) left.\nPlease enter your password: ", 1 - loginAttempts);
       } else {
-        printf("Wrong password!\nDo you want to reset your password (y)? ");
+        printf("Wrong password!\nDo you want to reset your password (y/n)? ");
         __security_readCommand(commandLine);
-        if (!strcmp(commandLine, "y")) {
+        if (toupper(commandLine[0]) == 'Y') {
           cJSON *recovery = cJSON_GetObjectItem(userObject, "recovery");
           if (recovery && cJSON_GetArraySize(recovery) > 0) {          
             int promptNum;

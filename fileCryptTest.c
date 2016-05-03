@@ -8,8 +8,13 @@
 #include "./libs/cJSON.h"
 #include "./libs/encryption.h"
 
-#define FILENAME ".users"
+#define FILENAME "./.users"
 #define LINE_LEN 255
+
+void readCommand(char buffer[]) {
+  fgets(buffer, CMD_LEN, stdin);
+  buffer[strlen(buffer)-1] = '\0'; // overwrite the line feed with null term
+}
 
 void fileCrypt(char* filenameIn, char* password) { 
   int fileLen;
@@ -25,7 +30,7 @@ void fileCrypt(char* filenameIn, char* password) {
   fileInput  = (char*) malloc(passLen + fileLen + 1); 
   fileOutput = (char*) malloc(passLen + fileLen + 1); 
     
-  if (strstr(filenameIn, ".crpt" )) {
+  if (strstr(filenameIn, "crpt" )) {
     printf("Running decryption protocol on %s!\n", filenameIn);
     strcpy(fileInput, fileInputTemp);
     

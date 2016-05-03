@@ -11,6 +11,11 @@
 
 #define XOR_CIPHER "HYiC5dZC0jiMdeQByHcPXxY7sDATnwyX"
 
+void readCommand(char buffer[]) {
+  fgets(buffer, CMD_LEN, stdin);
+  buffer[strlen(buffer)-1] = '\0'; // overwrite the line feed with null term
+}
+
 void main() {
   char *fileInput = NULL, *fileOutput = NULL;
   char filenameIn[LOGIN_LINE_LEN];

@@ -7,7 +7,7 @@
 #include "./libs/security.h"
 #include "./libs/cJSON.h"
 
-#define FILENAME ".users"
+#define FILENAME "./.users"
 #define LINE_LEN 255
 
 #define CMD_LEN 255
@@ -29,7 +29,7 @@ void main() {
       cJSON_Delete(userObject);
     }
     printf("Retest? (y/n) ");
-    readCommand(cmd);   
-  } while (toupper(cmd[0]) != 'Y');
+    readCommand(cmd);
+  } while (toupper(cmd[0]) == 'Y');
 	exit(EXIT_SUCCESS); 
 }

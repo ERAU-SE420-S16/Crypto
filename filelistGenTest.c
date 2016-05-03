@@ -38,15 +38,19 @@ int main (void) {
 	do {
     printf("Enter dir path: ");
     readCommand(dirPath);
-    
     clock_gettime(CLOCK_REALTIME, &start_time);
     rootNode = GetFileList(dirPath);
     clock_gettime(CLOCK_REALTIME, &end_time);
-    unsigned long count = printList(rootNode);
-    float time = (end_time.tv_nsec/1E6) - (start_time.tv_nsec/1E6);
-    printf("Iterated %lu files in %f ms\n", count, time);
+    if (rootNode == NULL) {
+      printf("Invalid path used.\n");
+    } else {
+      unsigned long count = printList(rootNode);
+      float time = (end_time.tv_nsec/1E6) - (start_time.tv_nsec/1E6);
+      printf("Iterated %lu files in %f ms\n", count, time);
+    }
     printf("Are you done? (y/n) ");
     readCommand(userResponse);
   } while (toupper(userResponse[0]) != 'Y');
+  printf("Success!");
 	exit(EXIT_SUCCESS);
 }
